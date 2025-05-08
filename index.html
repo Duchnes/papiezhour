@@ -110,6 +110,21 @@
         }
     }
 
+    // Funkcja debugowa do ręcznego uruchomienia muzyki i efektów
+    function debugStart() {
+        if (audio.paused) {
+            audio.play().catch(function(error) {
+                console.log("Music error: ", error);
+            });
+        }
+        audio.loop = true;  // Ustawiamy muzykę w pętli
+
+        // Wymuszamy aktywację efektów tła
+        document.body.classList.add("rainbow-background");
+        document.getElementById("TimerScript").style.color = "#1b1b1b";
+        document.getElementById("Clock").style.color = "#1b1b1b";
+    }
+
     setInterval(updateTimerAndClock, 1000);
 </script>
 
