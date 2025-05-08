@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +9,7 @@
 </head>
 
 <body>
-    <audio id="mp3music" src="media/music.mp3"></audio>
-
+    <audio id="mp3music" src="media/music.mp3" loop></audio>
     <div id="popup">
         <div id="popup-content">
             <h2>Witaj na Papież Hour!</h2>
@@ -24,93 +22,109 @@
         <p class="clock" id="Clock"></p>
         <p class="timer" id="TimerScript"></p>
     </div>
-</body>
 
-<script>
-    var audio = document.getElementById("mp3music");
+    <script>
+        var audio = document.getElementById("mp3music");
 
-    // Popup
-    document.getElementById("enterButton").addEventListener("click", function() {
-        audio.play().then(function() {
-            audio.pause();
-            audio.currentTime = 0;
+        // Popup
+        document.getElementById("enterButton").addEventListener("click", function() {
+            audio.play().then(function() {
+                audio.pause();
+                audio.currentTime = 0;
+            });
+
+            var popup = document.getElementById("popup");
+            popup.style.opacity = 0;
+            setTimeout(function() {
+                popup.style.display = 'none';
+            }, 500);
         });
 
-        var popup = document.getElementById("popup");
-        popup.style.opacity = 0;
-        setTimeout(function() {
-            popup.style.display = 'none';
-        }, 500);
-    });
+        function getPolishTime() {
+            return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
+        }
+        
 
-    function getPolishTime() {
-        return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Warsaw" }));
-    }
+        function getNextTargetTime() {
+            var now = getPolishTime();
+            var targetTime = new Date(now);
+            targetTime.setHours(21, 37, 0, 0);
 
-    function getNextTargetTime() {
-        var now = getPolishTime();
-        var targetTime = new Date(now);
-        targetTime.setHours(21, 37, 0, 0);
+            if (now.getTime() > targetTime.getTime()) {
+                targetTime.setDate(now.getDate() + 1);
+            }
 
-        if (now.getTime() > targetTime.getTime()) {
-            targetTime.setDate(now.getDate() + 1);
+            return targetTime.getTime();
         }
 
-        return targetTime.getTime();
-    }
-
-    function padZero(number) {
-        return number < 10 ? "0" + number : number;
-    }
-
-    function updateTimerAndClock() {
-        var now = getPolishTime();
-
-        // Timer
-        var countDownDate = getNextTargetTime();
-        var distance = countDownDate - now.getTime();
-
-        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        document.getElementById("TimerScript").innerHTML = padZero(hours) + "h " + padZero(minutes) + "m " + padZero(seconds) + "s ";
-
-        if (distance < 0) {
-            countDownDate = getNextTargetTime();
+        function padZero(number) {
+            return number < 10 ? "0" + number : number;
         }
 
-        // Zegar
-        var clockHours = now.getHours();
-        var clockMinutes = now.getMinutes();
-        var clockSeconds = now.getSeconds();
+        function updateTimerAndClock() {
+            var now = getPolishTime();
 
-        document.getElementById("Clock").innerHTML = padZero(clockHours) + ":" + padZero(clockMinutes) + ":" + padZero(clockSeconds);
+            // Timer
+            var countDownDate = getNextTargetTime();
+            var distance = countDownDate - now.getTime();
 
-        // Muzyka i tło
-        if (clockHours === 21 && clockMinutes === 37) {
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("TimerScript").innerHTML = padZero(hours) + "h " + padZero(minutes) + "m " + padZero(seconds) + "s ";
+
+            if (distance < 0) {
+                countDownDate = getNextTargetTime();
+            }
+
+            // Zegar
+            var clockHours = now.getHours();
+            var clockMinutes = now.getMinutes();
+            var clockSeconds = now.getSeconds();
+
+            document.getElementById("Clock").innerHTML = padZero(clockHours) + ":" + padZero(clockMinutes) + ":" + padZero(clockSeconds);
+
+            // Muzyka i tło
+            if (clockHours === 21 && clockMinutes === 37) {
+                if (audio.paused) {
+                    audio.play().catch(function(error) {
+                        console.log("Music error: ", error);
+                    });
+                }
+
+                document.body.classList.add("rainbow-background");
+                document.getElementById("TimerScript").style.color = "#1b1b1b";
+                document.getElementById("Clock").style.color = "#1b1b1b";
+            } else {
+                document.getElementById("TimerScript").style.color = "white";
+                document.getElementById("Clock").style.color = "white";
+            }
+        }
+
+        function debugStart() {
             if (audio.paused) {
                 audio.play().catch(function(error) {
                     console.log("Music error: ", error);
                 });
             }
 
+            audio.loop = true;  
+
             document.body.classList.add("rainbow-background");
             document.getElementById("TimerScript").style.color = "#1b1b1b";
             document.getElementById("Clock").style.color = "#1b1b1b";
-        } else {
-            if (!audio.paused) {
-                audio.pause();
-                audio.currentTime = 0;
-            }
+        }
 
+        function resetState() {
+            audio.pause();
+            audio.currentTime = 0;
             document.body.classList.remove("rainbow-background");
             document.getElementById("TimerScript").style.color = "white";
             document.getElementById("Clock").style.color = "white";
         }
-    }
 
-    setInterval(updateTimerAndClock, 1000);
-</script>
-
+        setInterval(updateTimerAndClock, 1000);
+    </script>
+</body>
 </html>
